@@ -2,6 +2,8 @@
 import * as fs from "node:fs";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { Button } from "~/components/ui/button";
+import { ThemeSwitcher, ThemeSwitcherDropdown } from "~/components/shared";
 
 const filePath = "count.txt";
 
@@ -34,15 +36,22 @@ function Home() {
   const state = Route.useLoaderData();
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        updateCount({ data: 1 }).then(() => {
-          router.invalidate();
-        });
-      }}
-    >
-      Add 1 to {state}?
-    </button>
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="absolute top-4 right-4 flex gap-2">
+        <ThemeSwitcher />
+      </div>
+      <h2>Welcome to Wagemore</h2>
+      <Button>Welcome to Nodebase</Button>
+
+      <div className="mt-8 flex flex-col items-center gap-4">
+        <p className="text-sm text-muted-foreground">Theme Switcher Options:</p>
+        <div className="flex gap-4 items-center">
+          <span className="text-sm">Toggle:</span>
+          <ThemeSwitcher />
+          <span className="text-sm">Dropdown:</span>
+          <ThemeSwitcherDropdown />
+        </div>
+      </div>
+    </div>
   );
 }

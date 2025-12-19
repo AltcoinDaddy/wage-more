@@ -8,26 +8,18 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { seoConfig } from "../seo";
+import { ThemeProvider } from "~/components/shared/theme-provider";
 
 export const Route = createRootRoute({
   head: () => ({
-    meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "WageMore",
-      },
-    ],
+    meta: seoConfig.meta,
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      ...seoConfig.faviconLinks,
     ],
   }),
   component: RootComponent,
@@ -48,7 +40,14 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
