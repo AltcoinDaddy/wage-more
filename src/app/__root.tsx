@@ -15,6 +15,9 @@ import { Toaster } from "~/components/ui/sonner";
 
 import type { QueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
+import { Navbar } from "~/components/shared/navbar";
+import { useRouterState } from "@tanstack/react-router";
+import { cn } from "~/lib/utils";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -40,8 +43,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen antialiased">
+      <body className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 antialiased">
         {children}
+
         {process.env.NODE_ENV === "development" && (
           <TanStackDevtools
             config={{

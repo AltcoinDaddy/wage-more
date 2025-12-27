@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './app/__root'
+import { Route as publicPublicRouteRouteImport } from './app/(public)/_public/route'
+import { Route as publicauthRouteRouteImport } from './app/(public)/(auth)/route'
 import { Route as publicMarketsIndexRouteImport } from './app/(public)/markets/index'
 import { Route as publicPublicIndexRouteImport } from './app/(public)/_public/index'
 import { Route as ApiAuthSplatRouteImport } from './app/api/auth/$'
@@ -16,15 +18,24 @@ import { Route as publicDashboardHomeIndexRouteImport } from './app/(public)/das
 import { Route as publicauthOnboardingIndexRouteImport } from './app/(public)/(auth)/onboarding/index'
 import { Route as publicauthLoginIndexRouteImport } from './app/(public)/(auth)/login/index'
 
+const publicPublicRouteRoute = publicPublicRouteRouteImport.update({
+  id: '/(public)/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const publicauthRouteRoute = publicauthRouteRouteImport.update({
+  id: '/(public)/(auth)',
+  path: '',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const publicMarketsIndexRoute = publicMarketsIndexRouteImport.update({
   id: '/(public)/markets/',
   path: '/markets/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicPublicIndexRoute = publicPublicIndexRouteImport.update({
-  id: '/(public)/_public/',
+  id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicPublicRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -39,14 +50,14 @@ const publicDashboardHomeIndexRoute =
   } as any)
 const publicauthOnboardingIndexRoute =
   publicauthOnboardingIndexRouteImport.update({
-    id: '/(public)/(auth)/onboarding/',
+    id: '/onboarding/',
     path: '/onboarding/',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => publicauthRouteRoute,
   } as any)
 const publicauthLoginIndexRoute = publicauthLoginIndexRouteImport.update({
-  id: '/(public)/(auth)/login/',
+  id: '/login/',
   path: '/login/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => publicauthRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -67,6 +78,8 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/(public)/(auth)': typeof publicauthRouteRouteWithChildren
+  '/(public)/_public': typeof publicPublicRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/(public)/_public/': typeof publicPublicIndexRoute
   '/(public)/markets/': typeof publicMarketsIndexRoute
@@ -93,6 +106,8 @@ export interface FileRouteTypes {
     | '/dashboard/home'
   id:
     | '__root__'
+    | '/(public)/(auth)'
+    | '/(public)/_public'
     | '/api/auth/$'
     | '/(public)/_public/'
     | '/(public)/markets/'
@@ -102,16 +117,29 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  publicauthRouteRoute: typeof publicauthRouteRouteWithChildren
+  publicPublicRouteRoute: typeof publicPublicRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  publicPublicIndexRoute: typeof publicPublicIndexRoute
   publicMarketsIndexRoute: typeof publicMarketsIndexRoute
-  publicauthLoginIndexRoute: typeof publicauthLoginIndexRoute
-  publicauthOnboardingIndexRoute: typeof publicauthOnboardingIndexRoute
   publicDashboardHomeIndexRoute: typeof publicDashboardHomeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/(public)/_public': {
+      id: '/(public)/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicPublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(public)/(auth)': {
+      id: '/(public)/(auth)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof publicauthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(public)/markets/': {
       id: '/(public)/markets/'
       path: '/markets'
@@ -124,7 +152,7 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicPublicIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicPublicRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -145,24 +173,48 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof publicauthOnboardingIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicauthRouteRoute
     }
     '/(public)/(auth)/login/': {
       id: '/(public)/(auth)/login/'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof publicauthLoginIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof publicauthRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
-  publicPublicIndexRoute: publicPublicIndexRoute,
-  publicMarketsIndexRoute: publicMarketsIndexRoute,
+interface publicauthRouteRouteChildren {
+  publicauthLoginIndexRoute: typeof publicauthLoginIndexRoute
+  publicauthOnboardingIndexRoute: typeof publicauthOnboardingIndexRoute
+}
+
+const publicauthRouteRouteChildren: publicauthRouteRouteChildren = {
   publicauthLoginIndexRoute: publicauthLoginIndexRoute,
   publicauthOnboardingIndexRoute: publicauthOnboardingIndexRoute,
+}
+
+const publicauthRouteRouteWithChildren = publicauthRouteRoute._addFileChildren(
+  publicauthRouteRouteChildren,
+)
+
+interface publicPublicRouteRouteChildren {
+  publicPublicIndexRoute: typeof publicPublicIndexRoute
+}
+
+const publicPublicRouteRouteChildren: publicPublicRouteRouteChildren = {
+  publicPublicIndexRoute: publicPublicIndexRoute,
+}
+
+const publicPublicRouteRouteWithChildren =
+  publicPublicRouteRoute._addFileChildren(publicPublicRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  publicauthRouteRoute: publicauthRouteRouteWithChildren,
+  publicPublicRouteRoute: publicPublicRouteRouteWithChildren,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  publicMarketsIndexRoute: publicMarketsIndexRoute,
   publicDashboardHomeIndexRoute: publicDashboardHomeIndexRoute,
 }
 export const routeTree = rootRouteImport
