@@ -9,7 +9,7 @@ function AppLayout() {
   return (
     <>
       <Navbar />
-      <div className="w-full max-w-[1600px] mx-auto px-4 md:px-5 py-4 flex-1">
+      <div className="w-full max-w-[1600px] mx-auto px-4 md:px-[60px] py-4 flex-1">
         <Outlet />
       </div>
     </>
