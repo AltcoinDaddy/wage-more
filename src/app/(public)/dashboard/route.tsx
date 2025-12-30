@@ -1,7 +1,36 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useLocation,
+} from "@tanstack/react-router";
 import { Navbar } from "~/components/shared/navbar";
 import { cn } from "~/lib/utils";
 import { buttonVariants } from "~/components/ui/button";
+
+// Route-based header configuration
+const routeHeaders: Record<string, { title: string; description: string }> = {
+  "/dashboard/home": {
+    title: "Profile Settings",
+    description: "Manage your account settings and set e-mail preferences.",
+  },
+  "/dashboard/account": {
+    title: "Creator Overview",
+    description: "View and manage your creator account details.",
+  },
+  "/dashboard/trading": {
+    title: "Trading Dashboard",
+    description: "Monitor your trades and trading performance.",
+  },
+  "/dashboard/notifications": {
+    title: "Notifications",
+    description: "Manage your notification preferences and alerts.",
+  },
+  "/dashboard/builder-codes": {
+    title: "Builder Codes",
+    description: "Access and manage your builder codes.",
+  },
+};
 
 // 1. Define your sidebar navigation items
 const sidebarNavItems = [
@@ -56,6 +85,15 @@ export const Route = createFileRoute("/(public)/dashboard")({
 });
 
 function DashboardLayout() {
+  const location = useLocation();
+  const currentRoute = location.pathname;
+
+  // Get header info for current route, with fallback
+  const headerInfo = routeHeaders[currentRoute] || {
+    title: "Dashboard",
+    description: "Welcome to your dashboard.",
+  };
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar />
@@ -67,11 +105,9 @@ function DashboardLayout() {
           {/* Page Header */}
           <div className="space-y-0.5 mb-6 px-1">
             <h2 className="text-2xl font-bold tracking-tight">
-              Profile Settings
+              {headerInfo.title}
             </h2>
-            <p className="text-muted-foreground">
-              Manage your account settings and set e-mail preferences.
-            </p>
+            <p className="text-muted-foreground">{headerInfo.description}</p>
           </div>
           <div className="my-6 border-t border-border" />
 

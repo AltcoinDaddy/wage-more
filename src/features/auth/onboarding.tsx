@@ -208,10 +208,6 @@ export function OnboardingPage() {
       return;
     }
 
-    // Pre-fill form if user has data
-    if (currentUser?.name && !username) {
-      setValue("username", currentUser.name);
-    }
     if (
       currentUser?.interests &&
       currentUser.interests.length > 0 &&

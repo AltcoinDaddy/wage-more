@@ -36,6 +36,13 @@
       "when": 1766712138823,
       "tag": "0004_productive_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767106051630,
+      "tag": "0005_dazzling_swordsman",
+      "breakpoints": true
     }
   ]
 }

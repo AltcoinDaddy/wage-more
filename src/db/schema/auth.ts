@@ -14,12 +14,14 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  walletAddress: text("wallet_address").unique(), // Add wallet address
+  walletAddress: text("wallet_address").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  referralCode: text("referral_code").unique(), // The user's own code (e.g., "JOHND123")
+  referralCode: text("referral_code").unique(),
   referredBy: text("referred_by"),
   onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
   interests: jsonb("interests").$type<string[]>().default([]),
+  bio: text("bio"),
+  deletedAt: timestamp("deleted_at"), // Add this field
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
