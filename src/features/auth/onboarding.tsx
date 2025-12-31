@@ -31,6 +31,7 @@ import { toast } from "sonner";
 // Server functions
 import { completeOnboardingFn } from "~/server/onboarding";
 import { getCurrentUser, checkOnboardingStatus } from "~/server/auth";
+import { currentUserOptions } from "~/server/user";
 import { WalletModal } from "~/components/shared/wallet-modal";
 
 // UI Components
@@ -109,18 +110,6 @@ const onboardingStatusOptions = (userId?: string) =>
   });
 
 // Query Options for current user data
-const currentUserOptions = (userId?: string) =>
-  queryOptions({
-    queryKey: ["current-user", userId],
-    queryFn: async () => {
-      if (!userId) {
-        throw new Error("No user ID available");
-      }
-      return await getCurrentUser();
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
 
 // Custom Success Animation (SVG-based)
 // Custom Success Animation with WebM

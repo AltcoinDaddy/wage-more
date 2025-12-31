@@ -23,6 +23,9 @@ declare global {
       readonly FLOW_WALLET_PRIVATE_KEY: string;
       readonly GOOGLE_CLIENT_ID: string;
       readonly GOOGLE_CLIENT_SECRET: string;
+      readonly CLOUDINARY_API_KEY: string;
+      readonly CLOUDINARY_API_SECRET: string;
+      readonly CLOUDINARY_CLOUD_NAME: string;
     }
   }
 }

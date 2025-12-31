@@ -8,5 +8,7 @@ export const updateUserSchema = z.object({
 });
 
 export const deleteUserSchema = z.object({
-  user_id: z.uuid(),
+  user_id: z.string(),
 });
+
+export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;

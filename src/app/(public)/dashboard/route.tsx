@@ -7,6 +7,7 @@ import {
 import { Navbar } from "~/components/shared/navbar";
 import { cn } from "~/lib/utils";
 import { buttonVariants } from "~/components/ui/button";
+import { authMiddleware } from "~/middleware/auth-middleware";
 
 // Route-based header configuration
 const routeHeaders: Record<string, { title: string; description: string }> = {
@@ -82,6 +83,9 @@ function SidebarNav({
 // 3. The Main Route and Dashboard Layout
 export const Route = createFileRoute("/(public)/dashboard")({
   component: DashboardLayout,
+  server: {
+    middleware: [authMiddleware],
+  },
 });
 
 function DashboardLayout() {

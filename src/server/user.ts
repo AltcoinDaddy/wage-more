@@ -1,3 +1,4 @@
+import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
@@ -27,6 +28,19 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
   },
 );
 
+export const currentUserOptions = (userId?: string) =>
+  queryOptions({
+    queryKey: ["current-user", userId],
+    queryFn: async () => {
+      if (!userId) {
+        throw new Error("No user ID available");
+      }
+      return await getCurrentUser();
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
 export const updateUserDetailsFn = createServerFn({ method: "POST" })
   .inputValidator(updateUserSchema)
   .handler(async ({ data }) => {
@@ -39,10 +53,17 @@ export const updateUserDetailsFn = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
 
-    const updatedUser = await db.update(user).set({
-      name: data.username,
-      image: data.avatarUrl,
-    });
+    const updatedUser = await db
+      .update(user)
+      .set({
+        name: data.username,
+        image: data.avatarUrl,
+        bio: data.bio,
+      })
+      .where(eq(user.id, session.user.id))
+      .returning();
+
+    return updatedUser;
   });
 
 export const deleteUserAccountFn = createServerFn({ method: "POST" }).handler(
