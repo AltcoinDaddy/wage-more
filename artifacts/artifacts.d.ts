@@ -7,10 +7,10 @@ import "hardhat/types/artifacts";
 
 declare module "hardhat/types/artifacts" {
   interface ArtifactsMap {
-    
+    OptimisticOracleV3Interface: never;
   }
 
   interface ContractTypesMap {
-    
+    OptimisticOracleV3Interface: never;
   }
 }

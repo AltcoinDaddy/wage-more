@@ -45,7 +45,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 antialiased">
         {children}
-
+        {/* 
         {process.env.NODE_ENV === "development" && (
           <TanStackDevtools
             config={{
@@ -62,7 +62,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               },
             ]}
           />
-        )}
+        )} */}
         <Toaster />
         <Scripts />
       </body>

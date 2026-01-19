@@ -6,16 +6,16 @@
 import "hardhat/types/artifacts";
 import type { GetContractReturnType } from "@nomicfoundation/hardhat-viem/types";
 
-import { Lock$Type } from "./Lock";
+import { Ownable$Type } from "./Ownable";
 
 declare module "hardhat/types/artifacts" {
   interface ArtifactsMap {
-    ["Lock"]: Lock$Type;
-    ["contracts/Lock.sol:Lock"]: Lock$Type;
+    ["Ownable"]: Ownable$Type;
+    ["@openzeppelin/contracts/access/Ownable.sol:Ownable"]: Ownable$Type;
   }
 
   interface ContractTypesMap {
-    ["Lock"]: GetContractReturnType<Lock$Type["abi"]>;
-    ["contracts/Lock.sol:Lock"]: GetContractReturnType<Lock$Type["abi"]>;
+    ["Ownable"]: GetContractReturnType<Ownable$Type["abi"]>;
+    ["@openzeppelin/contracts/access/Ownable.sol:Ownable"]: GetContractReturnType<Ownable$Type["abi"]>;
   }
 }

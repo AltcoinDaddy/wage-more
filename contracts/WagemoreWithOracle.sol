@@ -6,12 +6,16 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
- * @title Wagemore
- * @dev Prediction Market with FREE UMA Optimistic Oracle V3
- * - Decentralized resolution with community verification
- * - Market creators propose outcomes with refundable bonds
- * - Zero oracle fees (only refundable bonds)
- * - Challenge period for dispute resolution
+ * @title WagemoreWithOracle
+ * @dev Enhanced prediction market with FREE UMA Optimistic Oracle V3 integration
+ *
+ * KEY FEATURES:
+ * - Market creators can propose resolutions
+ * - Community can challenge incorrect resolutions
+ * - Fully decentralized and trustless
+ * - NO ORACLE FEES (just refundable bonds)
+ *
+ * UMA Optimistic Oracle V3: https://docs.uma.xyz/
  */
 
 // UMA Optimistic Oracle V3 Interface
@@ -49,7 +53,7 @@ interface OptimisticOracleV3Interface {
         );
 }
 
-contract Wagemore is Ownable, ReentrancyGuard, Pausable {
+contract WagemoreWithOracle is Ownable, ReentrancyGuard, Pausable {
     // =====================================
     // CONFIGURATION
     // =====================================
@@ -60,9 +64,9 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
     }
 
     // UMA Oracle Configuration
-    OptimisticOracleV3Interface public oo;
+    OptimisticOracleV3Interface public immutable oo;
     uint64 public constant ASSERTION_LIVENESS = 2 hours; // Challenge period
-    uint256 public assertionBond = 0.01 ether; // Refundable bond
+    uint256 public constant ASSERTION_BOND = 0.01 ether; // Refundable bond
     bytes32 public constant DEFAULT_IDENTIFIER = bytes32("ASSERT_TRUTH");
 
     // =====================================
@@ -94,7 +98,13 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         address indexed proposer,
         uint8 proposedWinner,
         bytes32 assertionId,
-        string evidence,
+        uint64 timestamp
+    );
+
+    event ResolutionChallenged(
+        uint64 indexed marketId,
+        address indexed challenger,
+        bytes32 assertionId,
         uint64 timestamp
     );
 
@@ -102,7 +112,6 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         uint64 indexed marketId,
         uint8 winningOption,
         bytes32 assertionId,
-        bool viaOracle,
         uint64 timestamp
     );
 
@@ -116,8 +125,6 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
     event PlatformFeesWithdrawn(address owner, uint64 amount);
     event CreationFeeUpdated(uint64 newFee);
     event PlatformFeeUpdated(uint64 newBps);
-    event AssertionBondUpdated(uint256 newBond);
-    event OracleUpdated(address newOracle);
 
     // =====================================
     // STATE STORAGE
@@ -145,6 +152,8 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
     mapping(uint64 => Market) public markets;
     mapping(uint64 => mapping(uint8 => mapping(address => uint256)))
         public bets;
+
+    // Map assertion IDs to market IDs
     mapping(bytes32 => uint64) public assertionIdToMarketId;
 
     // =====================================
@@ -153,12 +162,12 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @param _optimisticOracle Address of UMA Optimistic Oracle V3
-     * Pass address(0) to disable oracle (testing only)
+     * Mainnet: 0x...(check UMA docs)
+     * Sepolia: 0x...(check UMA docs)
      */
     constructor(address _optimisticOracle) Ownable(msg.sender) {
-        if (_optimisticOracle != address(0)) {
-            oo = OptimisticOracleV3Interface(_optimisticOracle);
-        }
+        require(_optimisticOracle != address(0), "Invalid OO address");
+        oo = OptimisticOracleV3Interface(_optimisticOracle);
     }
 
     // =====================================
@@ -222,7 +231,7 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
     function purchaseShares(
         uint64 marketId,
         uint8 optionIndex
-    ) external payable whenNotPaused nonReentrant {
+    ) external payable whenNotPaused {
         require(msg.value > 0, "Bet amount must be > 0");
         Market storage market = markets[marketId];
 
@@ -248,9 +257,9 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
      * @dev Propose a resolution using UMA Optimistic Oracle
      * @param marketId The market to resolve
      * @param winningOption The proposed winning option
-     * @param evidence URL or IPFS hash with proof
+     * @param evidence URL or IPFS hash with proof (e.g., "ipfs://Qm...")
      *
-     * REQUIRES: assertionBond (default 0.01 ETH) - REFUNDED if not challenged
+     * REQUIRES: ASSERTION_BOND (0.01 ETH) - REFUNDED if not challenged
      */
     function proposeResolution(
         uint64 marketId,
@@ -274,55 +283,39 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         );
 
         // Must provide bond
-        require(msg.value >= assertionBond, "Insufficient bond");
-
-        // If oracle is disabled, resolve immediately
-        if (address(oo) == address(0)) {
-            market.resolved = true;
-            market.winningOption = winningOption;
-            market.oracleResolved = false;
-
-            // Refund bond
-            if (msg.value > 0) {
-                (bool success, ) = payable(msg.sender).call{value: msg.value}(
-                    ""
-                );
-                require(success, "Refund failed");
-            }
-
-            emit MarketResolved(
-                marketId,
-                winningOption,
-                bytes32(0),
-                false,
-                uint64(block.timestamp)
-            );
-            return;
-        }
+        require(msg.value >= ASSERTION_BOND, "Insufficient bond");
 
         // Construct the claim
-        bytes memory claim = abi.encode(marketId, winningOption, evidence);
-
-        // Submit assertion to UMA
-        bytes32 assertionId = oo.assertTruth{value: assertionBond}(
-            claim,
-            msg.sender,
-            address(this),
-            address(0),
-            ASSERTION_LIVENESS,
-            address(0),
-            assertionBond,
-            DEFAULT_IDENTIFIER,
-            bytes32(0)
+        bytes memory claim = abi.encode(
+            "Market ",
+            marketId,
+            " resolved. Winner: Option ",
+            winningOption,
+            ". Evidence: ",
+            evidence
         );
 
+        // Submit assertion to UMA
+        bytes32 assertionId = oo.assertTruth{value: ASSERTION_BOND}(
+            claim,
+            msg.sender, // asserter
+            address(this), // callback recipient
+            address(0), // no escalation manager
+            ASSERTION_LIVENESS,
+            address(0), // use native token (ETH)
+            ASSERTION_BOND,
+            DEFAULT_IDENTIFIER,
+            bytes32(0) // no domain
+        );
+
+        // Store assertion ID
         market.assertionId = assertionId;
         assertionIdToMarketId[assertionId] = marketId;
 
         // Refund excess bond
-        if (msg.value > assertionBond) {
+        if (msg.value > ASSERTION_BOND) {
             (bool success, ) = payable(msg.sender).call{
-                value: msg.value - assertionBond
+                value: msg.value - ASSERTION_BOND
             }("");
             require(success, "Refund failed");
         }
@@ -332,23 +325,21 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
             msg.sender,
             winningOption,
             assertionId,
-            evidence,
             uint64(block.timestamp)
         );
     }
 
     /**
-     * @dev Finalize resolution after challenge period
+     * @dev Finalize the resolution after challenge period
      * Anyone can call this after ASSERTION_LIVENESS passes
      */
-    function finalizeResolution(uint64 marketId) external nonReentrant {
+    function finalizeResolution(uint64 marketId) external {
         Market storage market = markets[marketId];
         require(market.id != 0, "Invalid market");
         require(!market.resolved, "Already resolved");
         require(market.assertionId != bytes32(0), "No resolution proposed");
-        require(address(oo) != address(0), "Oracle not configured");
 
-        // Settle the assertion
+        // Settle the assertion (will revert if still in challenge period)
         oo.settleAssertion(market.assertionId);
 
         // Get the assertion result
@@ -358,11 +349,10 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         require(resolved, "Assertion not settled");
 
         // Extract winning option from claim
-        (uint64 claimMarketId, uint8 winningOption, ) = abi.decode(
+        (, , , uint8 winningOption, , ) = abi.decode(
             claim,
-            (uint64, uint8, string)
+            (string, uint64, string, uint8, string, string)
         );
-        require(claimMarketId == marketId, "Market ID mismatch");
 
         market.resolved = true;
         market.oracleResolved = true;
@@ -372,40 +362,30 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
             marketId,
             winningOption,
             market.assertionId,
-            true,
             uint64(block.timestamp)
         );
     }
 
     /**
-     * @dev Emergency override (for testing or broken oracle)
-     * Only owner can call, requires waiting period
+     * @dev Emergency override by owner (for broken oracle)
+     * Requires waiting 7 days after market end
      */
     function emergencyResolve(
         uint64 marketId,
         uint8 winningOption
-    ) external onlyOwner nonReentrant {
+    ) external onlyOwner {
         Market storage market = markets[marketId];
         require(market.id != 0, "Invalid market");
         require(!market.resolved, "Already resolved");
-
-        // If oracle is enabled, require waiting period
-        if (address(oo) != address(0)) {
-            require(
-                block.timestamp >= market.endTime + 7 days,
-                "Must wait 7 days"
-            );
-        }
+        require(block.timestamp >= market.endTime + 7 days, "Must wait 7 days");
 
         market.resolved = true;
         market.winningOption = winningOption;
-        market.oracleResolved = false;
 
         emit MarketResolved(
             marketId,
             winningOption,
             bytes32(0),
-            false,
             uint64(block.timestamp)
         );
     }
@@ -471,16 +451,6 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         emit PlatformFeeUpdated(newBps);
     }
 
-    function setAssertionBond(uint256 newBond) external onlyOwner {
-        assertionBond = newBond;
-        emit AssertionBondUpdated(newBond);
-    }
-
-    function setOracle(address newOracle) external onlyOwner {
-        oo = OptimisticOracleV3Interface(newOracle);
-        emit OracleUpdated(newOracle);
-    }
-
     function pause() external onlyOwner {
         _pause();
     }
@@ -532,10 +502,6 @@ contract Wagemore is Ownable, ReentrancyGuard, Pausable {
         return bets[marketId][optionIndex][user];
     }
 
-    function isOracleEnabled() external view returns (bool) {
-        return address(oo) != address(0);
-    }
-
-    // Allow contract to receive ETH
+    // Allow contract to receive ETH for bonds
     receive() external payable {}
 }

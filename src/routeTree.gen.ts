@@ -15,10 +15,12 @@ import { Route as publicauthRouteRouteImport } from './app/(public)/(auth)/route
 import { Route as publicPublicIndexRouteImport } from './app/(public)/_public/index'
 import { Route as ApiAuthSplatRouteImport } from './app/api/auth/$'
 import { Route as publicDashboardHomeIndexRouteImport } from './app/(public)/dashboard/home/index'
+import { Route as publicDashboardAccountIndexRouteImport } from './app/(public)/dashboard/account/index'
 import { Route as publicPublicSupportIndexRouteImport } from './app/(public)/_public/support/index'
 import { Route as publicPublicMarketsIndexRouteImport } from './app/(public)/_public/markets/index'
 import { Route as publicauthOnboardingIndexRouteImport } from './app/(public)/(auth)/onboarding/index'
 import { Route as publicauthLoginIndexRouteImport } from './app/(public)/(auth)/login/index'
+import { Route as publicPublicMarketsCreateIndexRouteImport } from './app/(public)/_public/markets/create/index'
 
 const publicDashboardRouteRoute = publicDashboardRouteRouteImport.update({
   id: '/(public)/dashboard',
@@ -50,6 +52,12 @@ const publicDashboardHomeIndexRoute =
     path: '/home/',
     getParentRoute: () => publicDashboardRouteRoute,
   } as any)
+const publicDashboardAccountIndexRoute =
+  publicDashboardAccountIndexRouteImport.update({
+    id: '/account/',
+    path: '/account/',
+    getParentRoute: () => publicDashboardRouteRoute,
+  } as any)
 const publicPublicSupportIndexRoute =
   publicPublicSupportIndexRouteImport.update({
     id: '/support/',
@@ -73,6 +81,12 @@ const publicauthLoginIndexRoute = publicauthLoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => publicauthRouteRoute,
 } as any)
+const publicPublicMarketsCreateIndexRoute =
+  publicPublicMarketsCreateIndexRouteImport.update({
+    id: '/markets/create/',
+    path: '/markets/create/',
+    getParentRoute: () => publicPublicRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/dashboard': typeof publicDashboardRouteRouteWithChildren
@@ -82,7 +96,9 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof publicauthOnboardingIndexRoute
   '/markets': typeof publicPublicMarketsIndexRoute
   '/support': typeof publicPublicSupportIndexRoute
+  '/dashboard/account': typeof publicDashboardAccountIndexRoute
   '/dashboard/home': typeof publicDashboardHomeIndexRoute
+  '/markets/create': typeof publicPublicMarketsCreateIndexRoute
 }
 export interface FileRoutesByTo {
   '/dashboard': typeof publicDashboardRouteRouteWithChildren
@@ -92,7 +108,9 @@ export interface FileRoutesByTo {
   '/onboarding': typeof publicauthOnboardingIndexRoute
   '/markets': typeof publicPublicMarketsIndexRoute
   '/support': typeof publicPublicSupportIndexRoute
+  '/dashboard/account': typeof publicDashboardAccountIndexRoute
   '/dashboard/home': typeof publicDashboardHomeIndexRoute
+  '/markets/create': typeof publicPublicMarketsCreateIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,7 +123,9 @@ export interface FileRoutesById {
   '/(public)/(auth)/onboarding/': typeof publicauthOnboardingIndexRoute
   '/(public)/_public/markets/': typeof publicPublicMarketsIndexRoute
   '/(public)/_public/support/': typeof publicPublicSupportIndexRoute
+  '/(public)/dashboard/account/': typeof publicDashboardAccountIndexRoute
   '/(public)/dashboard/home/': typeof publicDashboardHomeIndexRoute
+  '/(public)/_public/markets/create/': typeof publicPublicMarketsCreateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,7 +137,9 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/markets'
     | '/support'
+    | '/dashboard/account'
     | '/dashboard/home'
+    | '/markets/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/dashboard'
@@ -127,7 +149,9 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/markets'
     | '/support'
+    | '/dashboard/account'
     | '/dashboard/home'
+    | '/markets/create'
   id:
     | '__root__'
     | '/(public)/(auth)'
@@ -139,7 +163,9 @@ export interface FileRouteTypes {
     | '/(public)/(auth)/onboarding/'
     | '/(public)/_public/markets/'
     | '/(public)/_public/support/'
+    | '/(public)/dashboard/account/'
     | '/(public)/dashboard/home/'
+    | '/(public)/_public/markets/create/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -193,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicDashboardHomeIndexRouteImport
       parentRoute: typeof publicDashboardRouteRoute
     }
+    '/(public)/dashboard/account/': {
+      id: '/(public)/dashboard/account/'
+      path: '/account'
+      fullPath: '/dashboard/account'
+      preLoaderRoute: typeof publicDashboardAccountIndexRouteImport
+      parentRoute: typeof publicDashboardRouteRoute
+    }
     '/(public)/_public/support/': {
       id: '/(public)/_public/support/'
       path: '/support'
@@ -221,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicauthLoginIndexRouteImport
       parentRoute: typeof publicauthRouteRoute
     }
+    '/(public)/_public/markets/create/': {
+      id: '/(public)/_public/markets/create/'
+      path: '/markets/create'
+      fullPath: '/markets/create'
+      preLoaderRoute: typeof publicPublicMarketsCreateIndexRouteImport
+      parentRoute: typeof publicPublicRouteRoute
+    }
   }
 }
 
@@ -242,22 +282,26 @@ interface publicPublicRouteRouteChildren {
   publicPublicIndexRoute: typeof publicPublicIndexRoute
   publicPublicMarketsIndexRoute: typeof publicPublicMarketsIndexRoute
   publicPublicSupportIndexRoute: typeof publicPublicSupportIndexRoute
+  publicPublicMarketsCreateIndexRoute: typeof publicPublicMarketsCreateIndexRoute
 }
 
 const publicPublicRouteRouteChildren: publicPublicRouteRouteChildren = {
   publicPublicIndexRoute: publicPublicIndexRoute,
   publicPublicMarketsIndexRoute: publicPublicMarketsIndexRoute,
   publicPublicSupportIndexRoute: publicPublicSupportIndexRoute,
+  publicPublicMarketsCreateIndexRoute: publicPublicMarketsCreateIndexRoute,
 }
 
 const publicPublicRouteRouteWithChildren =
   publicPublicRouteRoute._addFileChildren(publicPublicRouteRouteChildren)
 
 interface publicDashboardRouteRouteChildren {
+  publicDashboardAccountIndexRoute: typeof publicDashboardAccountIndexRoute
   publicDashboardHomeIndexRoute: typeof publicDashboardHomeIndexRoute
 }
 
 const publicDashboardRouteRouteChildren: publicDashboardRouteRouteChildren = {
+  publicDashboardAccountIndexRoute: publicDashboardAccountIndexRoute,
   publicDashboardHomeIndexRoute: publicDashboardHomeIndexRoute,
 }
 

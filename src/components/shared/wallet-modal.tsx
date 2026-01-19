@@ -38,7 +38,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
   // FIX 2: Explicitly type 'c' as Connector
   const filteredConnectors = connectors.filter(
-    (c: Connector) => c.id !== "injected",
+    (c: Connector) => c.id !== "injected"
   );
 
   // Helper to map Wagmi connector IDs to Web3Icons IDs
@@ -133,19 +133,28 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                       <Button
                         key={chain.id}
                         variant={isActive ? "secondary" : "outline"}
-                        onClick={() => switchChain({ chainId: chain.id })}
+                        onClick={async () => {
+                          try {
+                            // First try regular switch via wagmi
+                            await switchChain({ chainId: chain.id });
+                          } catch (error: any) {
+                            const { switchOrAddNetwork } =
+                              await import("~/lib/wallet-network-utils");
+                            await switchOrAddNetwork(chain);
+                          }
+                        }}
                         className={cn(
                           "justify-between h-14 pl-3 pr-4 transition-all",
                           isActive
                             ? "border-primary/20 bg-primary/5 text-primary shadow-sm"
-                            : "hover:bg-muted/60",
+                            : "hover:bg-muted/60"
                         )}
                       >
                         <span className="flex items-center gap-3">
                           <div
                             className={cn(
                               "w-8 h-8 flex items-center justify-center rounded-full bg-background border",
-                              isActive ? "border-primary/20" : "border-border",
+                              isActive ? "border-primary/20" : "border-border"
                             )}
                           >
                             {/* FIX 4: Use 'network' prop instead of 'chainId' if chainId fails */}

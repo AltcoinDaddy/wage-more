@@ -1,14 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProfileForm } from "~/features/dashboard/profile/profile-form";
-import { useQuery } from "@tanstack/react-query";
-import { currentUserOptions } from "~/server/user";
-import { authClient } from "~/lib/auth-client";
+import { getCurrentUser } from "~/server/user";
 import { createPageMeta } from "~/seo";
-import { Loader2 } from "lucide-react";
-import { Card } from "~/components/ui/card";
 
 export const Route = createFileRoute("/(public)/dashboard/home/")({
   component: ProfilePage,
+  // Server-side data loading
+  loader: async () => {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+
+    return { currentUser };
+  },
   head: () =>
     createPageMeta({
       title: "Profile | Wagemore",
@@ -19,34 +25,16 @@ export const Route = createFileRoute("/(public)/dashboard/home/")({
 });
 
 function ProfilePage() {
-  // Better-auth session data
-  const { data: session, isPending } = authClient.useSession();
-
-  const {
-    data: currentUser,
-    isLoading: isLoadingUser,
-    error: userError,
-  } = useQuery(currentUserOptions(session?.user?.id));
-
-  if (isPending || isLoadingUser) {
-    return (
-      <Card className="w-full max-w-lg p-8">
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-lg font-medium">Loading...</p>
-          <p className="text-sm text-muted-foreground">Please wait a moment.</p>
-        </div>
-      </Card>
-    );
-  }
+  // Access the loader data - no loading state needed!
+  const { currentUser } = Route.useLoaderData();
 
   return (
     <ProfileForm
       user={{
-        name: currentUser?.name ?? "",
-        bio: currentUser?.bio ?? "",
-        image: currentUser?.image ?? "",
-        email: currentUser?.email ?? "",
+        name: currentUser.name ?? "",
+        bio: currentUser.bio ?? "",
+        image: currentUser.image ?? "",
+        email: currentUser.email ?? "",
       }}
     />
   );

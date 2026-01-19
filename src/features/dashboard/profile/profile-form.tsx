@@ -92,6 +92,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       variant="secondary"
                       size="sm"
                       className="gap-2"
+                      // @ts-ignore
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Camera size={16} />

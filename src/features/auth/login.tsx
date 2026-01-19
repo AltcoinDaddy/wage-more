@@ -26,42 +26,79 @@ export function AuthPage() {
               // Invalidate router to refresh auth state
               await router.invalidate();
 
-              // Small delay to ensure session is properly set
-              await new Promise((resolve) => setTimeout(resolve, 500));
+              // Longer delay to ensure user record is fully created in the database
+              // This is especially important for new users
+              await new Promise((resolve) => setTimeout(resolve, 1000));
 
-              // Check onboarding status after successful authentication
-              const onboardingStatus = await checkOnboardingStatus();
+              // Retry logic for checking onboarding status
+              let onboardingStatus;
+              let retries = 0;
+              const maxRetries = 3;
 
-              if (onboardingStatus.needsAuth) {
-                // This shouldn't happen since we just signed in, but handle it
-                toast.error("Authentication failed. Please try again.");
-                setIsLoading(false);
+              while (retries < maxRetries) {
+                try {
+                  onboardingStatus = await checkOnboardingStatus();
+
+                  // If we got a valid response (not needsAuth), break the retry loop
+                  if (!onboardingStatus.needsAuth) {
+                    break;
+                  }
+
+                  // If still needs auth, wait a bit and retry
+                  if (retries < maxRetries - 1) {
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+                    retries++;
+                  } else {
+                    break;
+                  }
+                } catch (error) {
+                  console.error(
+                    `Onboarding check attempt ${retries + 1} failed:`,
+                    error
+                  );
+                  retries++;
+                  if (retries < maxRetries) {
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+                  }
+                }
+              }
+
+              // Handle the final result
+              if (!onboardingStatus || onboardingStatus.needsAuth) {
+                // If we still can't get onboarding status, assume new user needs onboarding
+                toast.success(
+                  "Welcome to WageMore! Let's set up your account."
+                );
+                router.navigate({
+                  to: "/onboarding",
+                  replace: true,
+                });
                 return;
               }
 
               if (onboardingStatus.isCompleted) {
-                // User has completed onboarding, redirect to home page
+                // User has completed onboarding, redirect to dashboard
                 toast.success(
-                  `Welcome back${onboardingStatus.username ? `, ${onboardingStatus.username}` : ""}!`,
+                  `Welcome back${onboardingStatus.username ? `, ${onboardingStatus.username}` : ""}!`
                 );
                 router.navigate({
-                  to: "/",
-                  replace: true, // Replace current history entry
+                  to: "/dashboard/home",
+                  replace: true,
                 });
               } else {
                 // User needs to complete onboarding
                 toast.success(
-                  "Welcome to Wagemore! Let's complete your setup.",
+                  "Welcome to WageMore! Let's complete your setup."
                 );
                 router.navigate({
                   to: "/onboarding",
-                  replace: true, // Replace current history entry
+                  replace: true,
                 });
               }
             } catch (error) {
               console.error("Error checking onboarding status:", error);
-              // If we can't check onboarding status, default to onboarding page
-              toast.success("Welcome to Wagemore!");
+              // If we can't check onboarding status, default to onboarding page for safety
+              toast.success("Welcome to WageMore!");
               router.navigate({
                 to: "/onboarding",
                 replace: true,
@@ -75,7 +112,7 @@ export function AuthPage() {
             console.error("Auth error:", error);
             setIsLoading(false);
           },
-        },
+        }
       );
     } catch (error) {
       toast.error("Something went wrong. Please try again.");

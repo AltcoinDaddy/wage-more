@@ -73,7 +73,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="w-full flex flex-col border-b border-white/5 bg-transparent sticky top-0 z-50 backdrop-blur-md">
+    <header className="w-full flex flex-col border-b border-border bg-transparent sticky top-0 z-50 backdrop-blur-md">
       {/* --- TOP ROW --- */}
       <div className="w-full px-4 md:px-[60px] py-4 flex justify-between items-center gap-4 max-w-[1600px] mx-auto">
         {/* Logo Section */}
@@ -178,7 +178,7 @@ export function Navbar() {
 
             {/* --- MOBILE SHEET CONTENT --- */}
             <SheetContent
-              side="right"
+              side="left"
               className="w-[300px] sm:w-[400px] flex flex-col h-full px-4"
             >
               <SheetHeader className="mt-6">
@@ -189,8 +189,9 @@ export function Navbar() {
                     layout="constrained"
                     width={30}
                     height={30}
+
                   />
-                  <h1 className="font-bold text-shadow-white text-base mt">
+                  <h1 className="font-bold text-shadow-white text-base mt-[0.5px]">
                     WAGEMORE
                   </h1>
                 </Link>
@@ -300,7 +301,7 @@ export function Navbar() {
 
       {/* --- BOTTOM ROW: Tags/Categories --- */}
       {/* --- BOTTOM ROW: Tags/Categories --- */}
-      <div className="w-full overflow-x-auto no-scrollbar border-t border-white/5">
+      <div className="w-full overflow-x-auto no-scrollbar border-t border-border">
         <div className="flex items-center px-4 md:px-[60px] min-w-max max-w-[1600px] mx-auto">
           {categories.map((cat) => (
             <Link
