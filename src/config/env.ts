@@ -10,6 +10,9 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),
   CLOUDINARY_CLOUD_NAME: z.string(),
+  // Relayer (Smart Wallet)
+  RELAYER_PRIVATE_KEY: z.string().startsWith("0x").optional(),
+  RPC_URL: z.url().optional(),
 });
 
 export const serverEnv = envSchema.parse(process.env);

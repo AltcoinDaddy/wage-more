@@ -1,87 +1,8 @@
-import { LayoutGrid, ListFilter, Star } from "lucide-react";
+import { LayoutGrid, ListFilter, Star, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { MarketCard, type MarketType } from "~/components/shared/market-card"; // Import from the file above
-
-// --- Mock Data Matching Your Image ---
-const MOCK_MARKETS = [
-  {
-    id: 1,
-    title: "Yoon arrested by January 31?",
-    imageSrc:
-      "https://images.unsplash.com/photo-1558980394-a3099ed53abb?auto=format&fit=crop&w=100&q=80",
-    type: "binary" as MarketType,
-    volume: "2M",
-    comments: 501,
-    binaryData: {
-      yes: { label: "Yes", value: 60, change: 66.66 },
-      no: { label: "No", value: 40, change: 144 },
-    },
-  },
-  {
-    id: 2,
-    title: "SpaceX Starship Flight Test 7",
-    imageSrc:
-      "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=100&q=80",
-    type: "multiple" as MarketType,
-    isNew: true,
-    volume: "344K",
-    comments: 21,
-    multiData: [
-      { label: "Launch by Jan 10?", yes: 76, no: 24 },
-      { label: "Launch before February?", yes: 98, no: 2 },
-      { label: "Reaches Space?", yes: 95, no: 5 },
-    ],
-  },
-  {
-    id: 3,
-    title: "TikTok banned in the US before May 2025?",
-    imageSrc:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=100&q=80",
-    type: "binary" as MarketType,
-    volume: "2M",
-    comments: 501,
-    binaryData: {
-      yes: { label: "Yes", value: 59, change: 66.66 },
-      no: { label: "No", value: 41, change: 144 },
-    },
-  },
-  {
-    id: 4,
-    title: "Elon musk number of tweets January 3-10?",
-    imageSrc:
-      "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80",
-    type: "multiple" as MarketType, // Treated as multi in UI for list view style
-    volume: "$400k",
-    comments: 120,
-    multiData: [
-      { label: "575-599", yes: 1, no: 99 },
-      { label: "600-624", yes: 45, no: 55 },
-    ],
-  },
-  {
-    id: 5,
-    title: "Israel x Hamas cease-fire by January 31?",
-    imageSrc:
-      "https://images.unsplash.com/photo-1615109398623-88346a601842?auto=format&fit=crop&w=100&q=80",
-    type: "binary" as MarketType,
-    volume: "$1.2M",
-    comments: 89,
-    binaryData: {
-      yes: { label: "Yes", value: 12, change: 5 },
-      no: { label: "No", value: 88, change: 2 },
-    },
-  },
-  {
-    id: 6,
-    title: "What price will bitcoin in January?",
-    imageSrc:
-      "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=100&q=80",
-    type: "multiple" as MarketType,
-    volume: "$200,000",
-    comments: 204,
-    multiData: [{ label: "$90k - $100k", yes: 76, no: 24 }],
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { MarketCard, type MarketType } from "~/components/shared/market-card";
+import { getMarketsFn } from "~/server/market";
 
 // --- Filter Tags ---
 const FILTERS = [
@@ -96,6 +17,19 @@ const FILTERS = [
 
 export const MarketsSection = () => {
   const [activeFilter, setActiveFilter] = useState("All");
+
+  const { data: markets = [], isLoading } = useQuery({
+    queryKey: ["markets"],
+    queryFn: () => getMarketsFn(),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8">
@@ -152,19 +86,25 @@ export const MarketsSection = () => {
 
       {/* --- The Grid --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {MOCK_MARKETS.map((market) => (
-          <MarketCard
-            key={market.id}
-            title={market.title}
-            imageSrc={market.imageSrc}
-            type={market.type}
-            volume={market.volume}
-            comments={market.comments}
-            isNew={market.isNew}
-            binaryData={market.binaryData}
-            multiData={market.multiData}
-          />
-        ))}
+        {markets.length === 0 ? (
+          <div className="col-span-full text-center py-20 text-muted-foreground">
+            No markets found. Be the first to create one!
+          </div>
+        ) : (
+          markets.map((market) => (
+            <MarketCard
+              key={market.id}
+              title={market.title}
+              imageSrc={market.imageSrc}
+              type={market.type as MarketType}
+              volume={market.volume}
+              comments={market.comments}
+              isNew={market.isNew}
+              binaryData={market.binaryData}
+              multiData={market.multiData}
+            />
+          ))
+        )}
       </div>
     </div>
   );

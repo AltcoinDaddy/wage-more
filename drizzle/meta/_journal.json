@@ -43,6 +43,13 @@
       "when": 1767106051630,
       "tag": "0005_dazzling_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768862658968,
+      "tag": "0006_vengeful_electro",
+      "breakpoints": true
     }
   ]
 }

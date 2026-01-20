@@ -15,6 +15,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
   walletAddress: text("wallet_address").unique(),
+  smartAccountAddress: text("smart_account_address").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   referralCode: text("referral_code").unique(),
   referredBy: text("referred_by"),

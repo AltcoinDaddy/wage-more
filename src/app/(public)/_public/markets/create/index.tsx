@@ -1,9 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { CreateMarketForm } from "~/features/market/components/create-market-form";
 
-export const Route = createFileRoute('/(public)/_public/markets/create/')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute("/(public)/_public/markets/create/")({
+  component: CreateMarketPage,
+});
 
-function RouteComponent() {
-  return <div>Hello "/(public)/_public/markets/create/"!</div>
+function CreateMarketPage() {
+  return <CreateMarketForm />;
 }
